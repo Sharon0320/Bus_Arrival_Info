@@ -1,15 +1,16 @@
 package kr.co.company.bus_arrival_info.controller;
+import com.google.cloud.audit.AuthenticationInfo;
+
 import java.io.IOException;
 import java.net.URLEncoder;
 
-import kr.co.company.bus_arrival_info.model.AuthenticationInfo;
 
 import java.net.URL;
 import java.net.URLEncoder;
 
 public class GenUrl {
-    private static String EncodingKey = AuthenticationInfo.getEncodingKey();
-    private static String DecodingKey = AuthenticationInfo.getDecodingKey();
+    private static String EncodingKey = String.valueOf("h5k2pHVV7fUZGtbtOyrAVXLHJ1Smbn9kC1zxcdrW71mzAFFRcepjKydbU2G1gREraWXsUZ9wmrNGxPhjkyPTzg%3D%3D");
+    private static String DecodingKey = String.valueOf("h5k2pHVV7fUZGtbtOyrAVXLHJ1Smbn9kC1zxcdrW71mzAFFRcepjKydbU2G1gREraWXsUZ9wmrNGxPhjkyPTzg==");
 
     // 정류장 조회 URL Generate
     public static URL generate(String stSrch) throws IOException
