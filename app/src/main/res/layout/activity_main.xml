@@ -89,11 +89,22 @@
             android:timePickerMode="spinner"
             android:format24Hour="HH:mm" />
 
-        <Button
-            android:id="@+id/alarm_set_button"
-            android:layout_gravity="right"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Set Alarm" />
+            android:orientation="vertical">
+            <Button
+                android:id="@+id/alarm_set_button"
+                android:layout_gravity="right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Set Alarm" />
+            <Button
+                android:id="@+id/alarm_list_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alarm List" />
+
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "kr.co.company.bus_arrival_info"
-        minSdk 24
+        minSdk 31
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -26,10 +26,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildFeatures{
+        viewBinding true
+    }
 }
 
 dependencies {
 
+    implementation 'com.karumi:dexter:6.2.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'

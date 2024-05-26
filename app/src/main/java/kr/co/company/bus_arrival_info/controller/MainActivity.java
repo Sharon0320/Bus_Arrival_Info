@@ -1,15 +1,14 @@
 package kr.co.company.bus_arrival_info.controller;
 
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,10 +26,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import kr.co.company.bus_arrival_info.R;
+import kr.co.company.bus_arrival_info.databinding.ActivityMainBinding;
 import kr.co.company.bus_arrival_info.model.BusInfo;
 import kr.co.company.bus_arrival_info.model.Station;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final int REQUEST_EXACT_ALARM_PERMISSION = 1;
 
     private String getData;
     private EditText editStation;
@@ -43,7 +45,10 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> adapter;
     ArrayAdapter<String> adapter2;
     private TimePicker timePicker;
-    private Button alarmSetButton;
+
+    private static final String PREFS_NAME = "AlarmPrefs";
+    private static final String ALARM_NO_KEY = "alarm_no";
+    private int alarmNo;
 
     private boolean isTimerTaskOn = false;
     TimerTask timerTask;
@@ -53,19 +58,22 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> stationNames = new ArrayList<String>();
     private ArrayList<BusInfo> busInfos = new ArrayList<BusInfo>();
     private ArrayList<String> busInfoStrings = new ArrayList<String>();
+    private String selectedBusInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        editStation = (EditText) findViewById(R.id.editStation);
-        editBusNum = (EditText) findViewById(R.id.editBusNum);
-        listView = (ListView) findViewById(R.id.listview);
-        listView2 = (ListView) findViewById(R.id.listview2);
-        alarmtext = (TextView) findViewById(R.id.alarmtext);
-        timePicker = (TimePicker) findViewById(R.id.timePicker);
-        alarmSetButton = (Button) findViewById(R.id.alarm_set_button);
+        editStation = findViewById(R.id.editStation);
+        editBusNum = findViewById(R.id.editBusNum);
+        listView = findViewById(R.id.listview);
+        listView2 = findViewById(R.id.listview2);
+        alarmtext = findViewById(R.id.alarmtext);
+        timePicker = findViewById(R.id.timePicker);
+        timePicker.setIs24HourView(true);
+        Button alarmSetButton;
+        alarmSetButton = findViewById(R.id.alarm_set_button);
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, stationNames);
         adapter2 = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, busInfoStrings);
@@ -75,8 +83,27 @@ public class MainActivity extends AppCompatActivity {
         // Initially hide listView2
         listView2.setVisibility(View.GONE);
 
-        // Set alarm button click listener
-        alarmSetButton.setOnClickListener(v -> setAlarm());
+        // Load alarmNo from SharedPreferences
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        alarmNo = prefs.getInt(ALARM_NO_KEY, 0);
+
+        alarmSetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int hour = timePicker.getHour();
+                int minute = timePicker.getMinute();
+                setAlarm(hour, minute, selectedBusInfo);
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Save alarmNo to SharedPreferences
+        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+        editor.putInt(ALARM_NO_KEY, alarmNo);
+        editor.apply();
     }
 
     public void search(View view) throws IOException {
@@ -111,9 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     adapter.notifyDataSetChanged();
                 });
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (JSONException e) {
+            } catch (IOException | JSONException e) {
                 throw new RuntimeException(e);
             }
         }).start();
@@ -150,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         listView2.setOnItemClickListener((adapterView, view12, i, l) -> {
-            String selectedBusInfo = busInfoStrings.get(i);
+            selectedBusInfo = busInfoStrings.get(i);
             Toast.makeText(MainActivity.this, selectedBusInfo, Toast.LENGTH_SHORT).show();
             alarmtext.setText(selectedBusInfo);
         });
@@ -178,31 +203,43 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     adapter2.notifyDataSetChanged();
                 });
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (JSONException e) {
+            } catch (IOException | JSONException e) {
                 throw new RuntimeException(e);
             }
 
         }).start();
     }
 
-    private void setAlarm() {
-        int hour = timePicker.getCurrentHour();
-        int minute = timePicker.getCurrentMinute();
+    /* Set alarm for specific hour and minute */
+    @SuppressLint("ScheduleExactAlarm")
+    private void setAlarm(int hour, int minute, String busInfo) {
+        this.alarmNo++;
 
+        // Intent for the alarm broadcast receiver
+        Intent intent = new Intent(this, NotificationReceiver.class);
+        intent.putExtra("alarm_no", alarmNo);   // Alarm number
+        intent.putExtra("title", busInfo);      // Title
+        intent.putExtra("message", "Alarm set for " + hour + ":" + String.format("%02d", minute));      // Message
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, this.alarmNo, intent, PendingIntent.FLAG_IMMUTABLE);
+
+        // Set alarm time
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
         calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
 
-        Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager != null) {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
-            Toast.makeText(this, "Alarm set for " + hour + ":" + String.format("%02d", minute), Toast.LENGTH_SHORT).show();
+        // Check if the set time is before current time, if so, set it for the next day
+        if (calendar.before(Calendar.getInstance())) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
+
+        // Set exact alarm
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+
+        Toast.makeText(this, "Alarm set for " + hour + ":" + String.format("%02d", minute), Toast.LENGTH_SHORT).show();
     }
+
+
 }
