@@ -106,5 +106,12 @@
                 android:text="Alarm List" />
 
         </LinearLayout>
+
+        <ListView
+            android:id="@+id/alarm_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/timePicker"
+            android:layout_marginTop="16dp"/>
     </LinearLayout>
 </LinearLayout>
