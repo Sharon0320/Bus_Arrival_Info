@@ -1,7 +1,7 @@
 package kr.co.company.bus_arrival_info.controller;
 
-import static kr.co.company.bus_arrival_info.controller.MainActivity.ALARM_LIST_KEY;
-import static kr.co.company.bus_arrival_info.controller.MainActivity.PREFS_NAME;
+import static kr.co.company.bus_arrival_info.controller.NotificationMain.ALARM_LIST_KEY;
+import static kr.co.company.bus_arrival_info.controller.NotificationMain.PREFS_NAME;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,6 +24,7 @@ public class AlarmListActivity extends AppCompatActivity {
     private ArrayAdapter<String> alarmAdapter;
     private ArrayList<String> alarmListData;
     private Button deleteAllButton;
+    private Button backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +33,7 @@ public class AlarmListActivity extends AppCompatActivity {
 
         alarmListView = findViewById(R.id.alarm_list_view);
         deleteAllButton = findViewById(R.id.delete_all);
-
+        backButton = findViewById(R.id.back_button);
 
         alarmListData = getIntent().getStringArrayListExtra("alarmListData");
 
@@ -52,7 +53,13 @@ public class AlarmListActivity extends AppCompatActivity {
             }
         });
 
-
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 뒤로 가기 버튼 클릭 시 현재 액티비티 종료
+                finish();
+            }
+        });
     }
 
     private void saveAlarmListData() {

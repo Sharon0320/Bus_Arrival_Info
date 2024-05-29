@@ -125,7 +125,7 @@ public class IntroActivity extends AppCompatActivity {
 
     /* 메인으로 이동 */
     private void goMain() {
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, NotificationMain.class);
         startActivity(intent);
         finish();
     }

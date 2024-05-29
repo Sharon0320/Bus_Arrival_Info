@@ -31,7 +31,7 @@ import kr.co.company.bus_arrival_info.R;
 import kr.co.company.bus_arrival_info.model.BusInfo;
 import kr.co.company.bus_arrival_info.model.Station;
 
-public class MainActivity extends AppCompatActivity {
+public class NotificationMain extends AppCompatActivity {
 
     private static final int REQUEST_EXACT_ALARM_PERMISSION = 1;
 
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     stationId = station.getArsId();
                 }
             }
-            Toast.makeText(MainActivity.this, stationData + " " + stationId, Toast.LENGTH_SHORT).show();
+            Toast.makeText(NotificationMain.this, stationData + " " + stationId, Toast.LENGTH_SHORT).show();
 
             busNum = editBusNum.getText().toString();
             if (busNum.isEmpty()) {
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
         listView2.setOnItemClickListener((adapterView, view, i, l) -> {
             selectedBusInfo = busInfoStrings.get(i);
-            Toast.makeText(MainActivity.this, selectedBusInfo, Toast.LENGTH_SHORT).show();
+            Toast.makeText(NotificationMain.this, selectedBusInfo, Toast.LENGTH_SHORT).show();
             alarmtext.setText(selectedBusInfo);
         });
     }
@@ -254,7 +254,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openAlarmListActivity() {
-        Intent intent = new Intent(MainActivity.this, AlarmListActivity.class);
+        loadAlarmListData(); // SharedPreferences에서 최신 데이터 로드
+        Intent intent = new Intent(NotificationMain.this, AlarmListActivity.class);
         intent.putStringArrayListExtra("alarmListData", alarmListData);
         startActivity(intent);
     }
